@@ -19,7 +19,7 @@ namespace AppointmentScheduler.Repositories {
             return connection;
         }
 
-        // Returns a single value from a query (first column of first row)
+        // Returns a single value from a query (first column of the first row)
         public async Task<T?> ExecuteScalarAsync<T>(string sql, params NpgsqlParameter[] parameters) {
             await using var connection = await CreateOpenConnectionAsync();
             await using var command = new NpgsqlCommand(sql, connection);

@@ -3,6 +3,7 @@ using AppointmentScheduler.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using System.Text.RegularExpressions;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace AppointmentScheduler.Controllers {
 
@@ -37,6 +38,28 @@ namespace AppointmentScheduler.Controllers {
                 });
 
             return Ok(patients);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetPatientID(string id) {
+            Guid checkedID;
+            try {
+                checkedID = new Guid(id);
+            } catch {
+                return BadRequest("Invalid id");
+            }
+
+            var patient = await _dbManager.ExecuteReaderAsync(
+                "SELECT id, name, date_of_birth, email FROM patient WHERE patient.id = @id;",
+                reader => new Patient {
+                    Id = reader.GetGuid(0),
+                    Name = reader.GetString(1),
+                    Date_of_birth = reader.GetDateTime(2),
+                    Email = reader.GetString(3)
+                },
+                new NpgsqlParameter("@id", checkedID));
+
+            return Ok(patient);
         }
 
         bool IsValidEmail(string email) {

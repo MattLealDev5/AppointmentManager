@@ -4,3 +4,10 @@ CREATE TABLE IF NOT EXISTS patient (
     date_of_birth DATE NOT NULL,
     email VARCHAR(255) NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS appointment (
+    id UUID PRIMARY KEY,
+    patient_id UUID NOT NULL REFERENCES patient(id),
+    date TIMESTAMP NOT NULL,
+    type VARCHAR(255) NOT NULL
+);
