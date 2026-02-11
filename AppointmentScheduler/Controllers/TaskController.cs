@@ -30,6 +30,25 @@ namespace AppointmentScheduler.Controllers {
             return Ok(tasks);
         }
 
+        [HttpGet("{status}")]
+        public async Task<IActionResult> GetTasks(string status) {
+            if (String.IsNullOrEmpty(status)) {
+                return BadRequest("Must include a status");
+            }
+
+            var tasks = await _dbManager.ExecuteReaderAsync(
+                "SELECT id, appointment_id, status, priority FROM tasks WHERE status LIKE @status;",
+                reader => new Task {
+                    Id = reader.GetGuid(0),
+                    Appointment_id = reader.GetGuid(1),
+                    Status = reader.GetString(2),
+                    Priority = reader.GetString(3)
+                },
+                new NpgsqlParameter("@status", status));
+
+            return Ok(tasks);
+        }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> EditTask(string id, [FromBody] Task task) {
             Guid checkedID;
