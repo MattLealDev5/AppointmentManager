@@ -3,24 +3,23 @@ using AppointmentScheduler.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using System.Threading.Tasks;
-using Task = AppointmentScheduler.Models.Task;
 
 namespace AppointmentScheduler.Controllers {
 
     [ApiController]
     [Route("[controller]")]
-    public class TaskController : ControllerBase {
+    public class TaskItemController : ControllerBase {
         private readonly DatabaseManager _dbManager;
 
-        public TaskController(DatabaseManager dbManager) {
+        public TaskItemController(DatabaseManager dbManager) {
             _dbManager = dbManager;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetTasks() {
             var tasks = await _dbManager.ExecuteReaderAsync(
-                "SELECT id, appointment_id, status, priority FROM tasks;",
-                reader => new Task {
+                "SELECT id, appointment_id, status, priority FROM task;",
+                reader => new TaskItem {
                     Id = reader.GetGuid(0),
                     Appointment_id = reader.GetGuid(1),
                     Status = reader.GetString(2),
@@ -37,8 +36,8 @@ namespace AppointmentScheduler.Controllers {
             }
 
             var tasks = await _dbManager.ExecuteReaderAsync(
-                "SELECT id, appointment_id, status, priority FROM tasks WHERE status LIKE @status;",
-                reader => new Task {
+                "SELECT id, appointment_id, status, priority FROM task WHERE status LIKE @status;",
+                reader => new TaskItem {
                     Id = reader.GetGuid(0),
                     Appointment_id = reader.GetGuid(1),
                     Status = reader.GetString(2),
@@ -50,7 +49,7 @@ namespace AppointmentScheduler.Controllers {
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> EditTask(string id, [FromBody] Task task) {
+        public async Task<IActionResult> EditTask(string id, [FromBody] TaskItem task) {
             Guid checkedID;
             try {
                 checkedID = new Guid(id);
@@ -62,7 +61,7 @@ namespace AppointmentScheduler.Controllers {
             if (task.Priority == null) { return BadRequest("Must include priority"); }
 
             var rowsAffected = await _dbManager.ExecuteNonQueryAsync(
-                "UPDATE tasks SET appointment_id = @appointment_id, status = @status, priority = @priority WHERE id = @id;",
+                "UPDATE task SET appointment_id = @appointment_id, status = @status, priority = @priority WHERE id = @id;",
                 new NpgsqlParameter("@id", checkedID),
                 new NpgsqlParameter("@appointment_id", task.Appointment_id),
                 new NpgsqlParameter("@status", task.Status),
@@ -84,7 +83,7 @@ namespace AppointmentScheduler.Controllers {
             }
 
             var rowsAffected = await _dbManager.ExecuteNonQueryAsync(
-                "UPDATE tasks SET status = @status WHERE id = @id;",
+                "UPDATE task SET status = @status WHERE id = @id;",
                 new NpgsqlParameter("@id", checkedID),
                 new NpgsqlParameter("@status", "Overdue"));
 
