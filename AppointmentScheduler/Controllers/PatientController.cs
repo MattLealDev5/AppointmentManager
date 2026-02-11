@@ -16,16 +16,6 @@ namespace AppointmentScheduler.Controllers {
             _dbManager = dbManager;
         }
 
-        [HttpGet("check-connection")]
-        public async Task<IActionResult> CheckConnection() {
-            try {
-                await using var connection = await _dbManager.CreateOpenConnectionAsync();
-                return Ok(new { status = "Connected" });
-            } catch (Exception ex) {
-                return StatusCode(500, new { status = "Failed", error = ex.Message });
-            }
-        }
-
         [HttpGet]
         public async Task<IActionResult> GetPatients() {
             var patients = await _dbManager.ExecuteReaderAsync(
