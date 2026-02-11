@@ -2,7 +2,6 @@
 using AppointmentScheduler.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
-using System.Text.RegularExpressions;
 
 namespace AppointmentScheduler.Controllers {
 

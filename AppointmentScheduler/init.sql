@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS appointment (
 );
 
 
-CREATE TABLE IF NOT EXISTS tasks (
+CREATE TABLE IF NOT EXISTS task (
     id UUID PRIMARY KEY,
     appointment_id UUID NOT NULL REFERENCES appointment(id),
     status VARCHAR(255) NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS tasks (
 CREATE OR REPLACE FUNCTION create_task_for_appointment()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO tasks (id, appointment_id, status, priority)
+    INSERT INTO task (id, appointment_id, status, priority)
     VALUES (gen_random_uuid(), NEW.id, 'pending', 'normal');
     RETURN NEW;
 END;
