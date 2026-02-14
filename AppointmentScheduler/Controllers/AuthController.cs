@@ -26,6 +26,8 @@ namespace AppointmentScheduler.Controllers {
             if (request.Username == null) { return BadRequest("Must include username"); }
             if (request.Password == null) { return BadRequest("Must include password"); }
             if (request.Role == null) { return BadRequest("Must include role"); }
+            if (!Validation.IsValidEmail(request.Email)) { return BadRequest("Invalid email"); }
+            if (!Validation.IsValidPhone(request.Phone)) { return BadRequest("Invalid phone number"); }
 
             var validRoles = new[] { "FrontDesk", "ClinicalStaff" };
             if (!validRoles.Contains(request.Role)) {

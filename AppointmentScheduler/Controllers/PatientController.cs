@@ -3,8 +3,6 @@ using AppointmentScheduler.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
-using System.Text.RegularExpressions;
-using static System.Reflection.Metadata.BlobBuilder;
 
 namespace AppointmentScheduler.Controllers {
 
@@ -55,22 +53,13 @@ namespace AppointmentScheduler.Controllers {
             return Ok(patient);
         }
 
-        bool IsValidEmail(string email) {
-            if (string.IsNullOrWhiteSpace(email))
-                return false;
-
-            // Balanced regex pattern
-            string pattern = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
-
-            return Regex.IsMatch(email, pattern, RegexOptions.IgnoreCase);
-        }
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> CreatePatient([FromBody] Patient patient) {
             if (patient.Name == null) { return BadRequest("Must include name"); }
             if (patient.Date_of_birth == null) { return BadRequest("Must include date of birth"); }
             if (patient.Email == null) { return BadRequest("Must include email"); }
-            if (!IsValidEmail(patient.Email)) { return BadRequest("Not a valid email"); }
+            if (!Validation.IsValidEmail(patient.Email)) { return BadRequest("Not a valid email"); }
 
             patient.Id = Guid.NewGuid();
 
@@ -97,7 +86,7 @@ namespace AppointmentScheduler.Controllers {
             if (patient.Name == null) { return BadRequest("Must include name"); }
             if (patient.Date_of_birth == null) { return BadRequest("Must include date of birth"); }
             if (patient.Email == null) { return BadRequest("Must include email"); }
-            if (!IsValidEmail(patient.Email)) { return BadRequest("Not a valid email"); }
+            if (!Validation.IsValidEmail(patient.Email)) { return BadRequest("Not a valid email"); }
 
             var rowsAffected = await _dbManager.ExecuteNonQueryAsync(
                 "UPDATE patient SET name = @name, date_of_birth = @date_of_birth, email = @email WHERE id = @id;",
