@@ -1,5 +1,6 @@
 ﻿using AppointmentScheduler.Models;
 using AppointmentScheduler.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 
@@ -15,6 +16,7 @@ namespace AppointmentScheduler.Controllers {
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetAppointments() {
             var appointments = await _dbManager.ExecuteReaderAsync(
                 "SELECT id, patient_id, date, type FROM appointment;",
@@ -29,6 +31,7 @@ namespace AppointmentScheduler.Controllers {
         }
 
         [HttpGet("{patient_id}")]
+        [Authorize]
         public async Task<IActionResult> GetAppointmentsPID(string patient_id) {
             Guid checkedID;
             try {
@@ -51,6 +54,7 @@ namespace AppointmentScheduler.Controllers {
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> CreateAppointment([FromBody] Appointment appointment) {
             if (appointment.Type == null) { return BadRequest("Must include type"); }
 
@@ -67,6 +71,7 @@ namespace AppointmentScheduler.Controllers {
         }
 
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> EditPatient(string id, [FromBody] Appointment appointment) {
             Guid checkedID;
             try {
@@ -91,6 +96,7 @@ namespace AppointmentScheduler.Controllers {
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteAppointment(string id) {
             Guid checkedID;
             try {

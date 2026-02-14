@@ -1,5 +1,6 @@
 ﻿using AppointmentScheduler.Models;
 using AppointmentScheduler.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using System.Text.RegularExpressions;
@@ -17,6 +18,7 @@ namespace AppointmentScheduler.Controllers {
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetPatients() {
             var patients = await _dbManager.ExecuteReaderAsync(
                 "SELECT id, name, date_of_birth, email FROM patient;",
@@ -31,6 +33,7 @@ namespace AppointmentScheduler.Controllers {
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<IActionResult> GetPatientID(string id) {
             Guid checkedID;
             try {
@@ -62,6 +65,7 @@ namespace AppointmentScheduler.Controllers {
             return Regex.IsMatch(email, pattern, RegexOptions.IgnoreCase);
         }
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> CreatePatient([FromBody] Patient patient) {
             if (patient.Name == null) { return BadRequest("Must include name"); }
             if (patient.Date_of_birth == null) { return BadRequest("Must include date of birth"); }
@@ -81,6 +85,7 @@ namespace AppointmentScheduler.Controllers {
         }
 
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> EditPatient(string id, [FromBody] Patient patient) {
             Guid checkedID;
             try {

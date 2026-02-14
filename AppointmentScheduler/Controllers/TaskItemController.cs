@@ -1,5 +1,6 @@
 ﻿using AppointmentScheduler.Models;
 using AppointmentScheduler.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace AppointmentScheduler.Controllers {
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetTasks() {
             var tasks = await _dbManager.ExecuteReaderAsync(
                 "SELECT id, appointment_id, status, priority FROM task;",
@@ -30,6 +32,7 @@ namespace AppointmentScheduler.Controllers {
         }
 
         [HttpGet("{status}")]
+        [Authorize]
         public async Task<IActionResult> GetTasks(string status) {
             if (String.IsNullOrEmpty(status)) {
                 return BadRequest("Must include a status");
@@ -49,6 +52,7 @@ namespace AppointmentScheduler.Controllers {
         }
 
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> EditTask(string id, [FromBody] TaskItem task) {
             Guid checkedID;
             try {
@@ -74,6 +78,7 @@ namespace AppointmentScheduler.Controllers {
         }
 
         [HttpPut("markOverdue/{id}")]
+        [Authorize]
         public async Task<IActionResult> MarkOverdueTask(string id) {
             Guid checkedID;
             try {

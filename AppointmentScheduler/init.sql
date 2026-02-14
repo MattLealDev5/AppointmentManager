@@ -15,9 +15,18 @@ CREATE TABLE IF NOT EXISTS appointment (
 
 CREATE TABLE IF NOT EXISTS task (
     id UUID PRIMARY KEY,
-    appointment_id UUID NOT NULL REFERENCES appointment(id),
+    appointment_id UUID NOT NULL REFERENCES appointment(id) ON DELETE CASCADE,
     status VARCHAR(255) NOT NULL,
     priority VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS users (
+    id UUID PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    email VARCHAR(255),
+    phone VARCHAR(50)
 );
 
 CREATE OR REPLACE FUNCTION create_task_for_appointment()
