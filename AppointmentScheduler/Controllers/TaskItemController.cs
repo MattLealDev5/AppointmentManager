@@ -33,7 +33,7 @@ namespace AppointmentScheduler.Controllers {
 
         [HttpGet("{status}")]
         [Authorize]
-        public async Task<IActionResult> GetTasks(string status) {
+        public async Task<IActionResult> GetTaskStatus(string status) {
             if (String.IsNullOrEmpty(status)) {
                 return BadRequest("Must include a status");
             }
