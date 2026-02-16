@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Moq;
 using Npgsql;
 
-namespace AppointmentScheduler.Tests;
+namespace AppointmentScheduler;
 
 public class AuthControllerTests {
     private readonly Mock<IDatabaseManager> _mockDb;
