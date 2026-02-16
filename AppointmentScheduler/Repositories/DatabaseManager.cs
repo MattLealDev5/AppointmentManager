@@ -1,7 +1,13 @@
 ﻿using Npgsql;
 
 namespace AppointmentScheduler.Repositories {
-    public class DatabaseManager {
+    public interface IDatabaseManager {
+        Task<T?> ExecuteScalarAsync<T>(string sql, params NpgsqlParameter[] parameters);
+        Task<int> ExecuteNonQueryAsync(string sql, params NpgsqlParameter[] parameters);
+        Task<List<T>> ExecuteReaderAsync<T>(string sql, Func<NpgsqlDataReader, T> mapper, params NpgsqlParameter[] parameters);
+    }
+
+    public class DatabaseManager : IDatabaseManager {
         private readonly string _connectionString;
 
         public DatabaseManager(IConfiguration configuration) {

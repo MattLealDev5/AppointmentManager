@@ -10,9 +10,9 @@ namespace AppointmentScheduler.Controllers {
     [ApiController]
     [Route("[controller]")]
     public class TaskItemController : ControllerBase {
-        private readonly DatabaseManager _dbManager;
+        private readonly IDatabaseManager _dbManager;
 
-        public TaskItemController(DatabaseManager dbManager) {
+        public TaskItemController(IDatabaseManager dbManager) {
             _dbManager = dbManager;
         }
 

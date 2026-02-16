@@ -13,10 +13,10 @@ namespace AppointmentScheduler.Controllers {
     [ApiController]
     [Route("[controller]")]
     public class AuthController : ControllerBase {
-        private readonly DatabaseManager _dbManager;
+        private readonly IDatabaseManager _dbManager;
         private readonly IConfiguration _configuration;
 
-        public AuthController(DatabaseManager dbManager, IConfiguration configuration) {
+        public AuthController(IDatabaseManager dbManager, IConfiguration configuration) {
             _dbManager = dbManager;
             _configuration = configuration;
         }
