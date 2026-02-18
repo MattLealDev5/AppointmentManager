@@ -5,3 +5,4 @@ AppointmentManager is a program that uses .NET API endpoints and PostgreSQL to h
 ## Current Features:
 * PostgreSQL database connectivity
 * Patient database and API
+* Unit testing
