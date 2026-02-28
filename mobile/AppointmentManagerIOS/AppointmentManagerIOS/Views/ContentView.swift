@@ -59,6 +59,8 @@ struct ContentView: View {
     }
 
     private func Register() async {
+        let registerURL = "\(baseURL)/Auth/register"
+        
         let requestBody = RegisterRequest(
             username: regUsername,
             password: regPassword,
@@ -67,7 +69,7 @@ struct ContentView: View {
             phone: regPhone
         )
 
-        guard let url = URL(string: "https://localhost:7111/Auth/register") else { return }
+        guard let url = URL(string: registerURL) else { return }
 
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"

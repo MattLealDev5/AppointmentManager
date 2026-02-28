@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using AppointmentScheduler.Models;
 using AppointmentScheduler.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
@@ -21,6 +22,7 @@ namespace AppointmentScheduler.Controllers {
             _configuration = configuration;
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request) {
             if (request.Username == null) { return BadRequest("Must include username"); }
@@ -63,6 +65,7 @@ namespace AppointmentScheduler.Controllers {
             return CreatedAtAction(nameof(Register), new { id = user.Id }, new { user.Id, user.Username, user.Role });
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request) {
             if (request.Username == null) { return BadRequest("Must include username"); }
