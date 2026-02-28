@@ -12,7 +12,7 @@ import SwiftData
 struct AppointmentManagerIOSApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            User.self,
+            LoginRequest.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
