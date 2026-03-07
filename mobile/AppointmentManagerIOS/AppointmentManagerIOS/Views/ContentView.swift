@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftData
 
-private let baseURL = "http://localhost:5000"
+private let baseURL = Secrets.apiBaseURL
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
@@ -84,18 +84,19 @@ struct ContentView: View {
             let body = String(data: data, encoding: .utf8) ?? ""
 
             switch httpResponse.statusCode {
-            case 201:
+            case 200, 201:
                 regStatusMessage = "Registration successful!"
             case 400, 409:
                 regStatusMessage = body
             default:
-                regStatusMessage = "Unexpected error (\(httpResponse.statusCode))"
+                regStatusMessage = "Unexpected error (\(httpResponse.statusCode)): \(body)"
             }
+            
+            print(regStatusMessage)
+            
         } catch {
             regStatusMessage = "Request failed: \(error.localizedDescription)"
         }
-        
-        print(regStatusMessage)
     }
 }
 

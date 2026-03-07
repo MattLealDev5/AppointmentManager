@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B9950C5D2F5C837E00E51D50 /* CLAUDE.md in Resources */ = {isa = PBXBuildFile; fileRef = B9950C5C2F5C837E00E51D50 /* CLAUDE.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		B999BAE22F5258BB0093306F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,14 +28,28 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B9950C5C2F5C837E00E51D50 /* CLAUDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CLAUDE.md; sourceTree = "<group>"; };
 		B999BAD22F5258B90093306F /* AppointmentManagerIOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppointmentManagerIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B999BAE12F5258BB0093306F /* AppointmentManagerIOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppointmentManagerIOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B999BAEB2F5258BB0093306F /* AppointmentManagerIOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppointmentManagerIOSUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B999BB0D2F52AEB50093306F /* Exceptions for "AppointmentManagerIOS" folder in "AppointmentManagerIOS" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B999BAD12F5258B90093306F /* AppointmentManagerIOS */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B999BAD42F5258B90093306F /* AppointmentManagerIOS */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B999BB0D2F52AEB50093306F /* Exceptions for "AppointmentManagerIOS" folder in "AppointmentManagerIOS" target */,
+			);
 			path = AppointmentManagerIOS;
 			sourceTree = "<group>";
 		};
@@ -75,6 +93,7 @@
 		B999BAC92F5258B90093306F = {
 			isa = PBXGroup;
 			children = (
+				B9950C5C2F5C837E00E51D50 /* CLAUDE.md */,
 				B999BAD42F5258B90093306F /* AppointmentManagerIOS */,
 				B999BAE42F5258BB0093306F /* AppointmentManagerIOSTests */,
 				B999BAEE2F5258BB0093306F /* AppointmentManagerIOSUITests */,
@@ -212,6 +231,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B9950C5D2F5C837E00E51D50 /* CLAUDE.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -400,6 +420,7 @@
 				DEVELOPMENT_TEAM = 86VY78F385;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AppointmentManagerIOS/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -432,6 +453,7 @@
 				DEVELOPMENT_TEAM = 86VY78F385;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AppointmentManagerIOS/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
