@@ -6,11 +6,10 @@
 //
 
 import Foundation
-import SwiftData
 
-struct Appointment {
-    var id: UUID
-    var patient_id: UUID
-    var date: Date?
+struct Appointment: Codable, Identifiable {
+    var id: String?
+    var patient_id: String
+    var date: String?
     var type: String?
 }
