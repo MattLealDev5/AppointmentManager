@@ -65,21 +65,15 @@ struct MainTabView: View {
                 }
 
                 Tab("Patients", systemImage: "person.2", value: 1) {
-                    Text("Patients")
-                        .font(.title2)
-                        .foregroundStyle(.secondary)
+                    PatientsView()
                 }
 
                 Tab("Appointments", systemImage: "calendar", value: 2) {
-                    Text("Appointments")
-                        .font(.title2)
-                        .foregroundStyle(.secondary)
+                    AppointmentsView()
                 }
 
                 Tab("Tasks", systemImage: "checklist", value: 3) {
-                    Text("Tasks")
-                        .font(.title2)
-                        .foregroundStyle(.secondary)
+                    TasksView()
                 }
             }
         }
