@@ -61,6 +61,7 @@ namespace AppointmentScheduler.Controllers {
                 return BadRequest("Invalid id");
             }
 
+            if (task.Appointment_id == null) { return BadRequest("Must include appointment_id"); }
             if (task.Status == null) { return BadRequest("Must include status"); }
             if (task.Priority == null) { return BadRequest("Must include priority"); }
 
