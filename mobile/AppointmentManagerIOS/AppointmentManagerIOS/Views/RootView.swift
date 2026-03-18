@@ -10,6 +10,7 @@ import SwiftData
 
 struct RootView: View {
     @State private var authVM = AuthViewModel()
+    @State private var dataStore = DataStore()
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
@@ -24,13 +25,20 @@ struct RootView: View {
                         .foregroundStyle(.secondary)
                 }
             } else if authVM.isLoggedIn {
-                MainTabView()
+                MainTabView(authVM: authVM, dataStore: dataStore)
             } else {
                 LoginView(authVM: authVM)
             }
         }
         .task {
             await authVM.attemptAutoLogin(modelContext: modelContext)
+        }
+        .onChange(of: authVM.isLoggedIn) { _, isLoggedIn in
+            if isLoggedIn {
+                Task {
+                    await dataStore.refreshAll(token: authVM.token)
+                }
+            }
         }
     }
 }

@@ -8,11 +8,15 @@
 import SwiftUI
 
 struct AppointmentsView: View {
-    var appointments: [Appointment] = SampleData.appointments
+    var dataStore: DataStore
+    var authVM: AuthViewModel
     @State private var displayedMonth = Date()
     @State private var selectedDate: Date?
     @State private var selectedAppointments: [Appointment] = []
-    @State private var showingSheet = false
+    @State private var showingDaySheet = false
+    @State private var showingNewAppointmentSheet = false
+
+    private var appointments: [Appointment] { dataStore.appointments }
 
     private let calendar = Calendar.current
     private let weekdaySymbols = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
@@ -28,7 +32,7 @@ struct AppointmentsView: View {
 
                     Spacer()
 
-                    Button(action: {}) {
+                    Button(action: { showingNewAppointmentSheet = true }) {
                         Label("Schedule Appointment", systemImage: "plus")
                             .font(.subheadline)
                             .fontWeight(.semibold)
@@ -105,7 +109,7 @@ struct AppointmentsView: View {
                                 .onTapGesture {
                                     selectedDate = date
                                     selectedAppointments = dayAppointments
-                                    showingSheet = true
+                                    showingDaySheet = true
                                 }
                             } else {
                                 Color.clear
@@ -122,12 +126,15 @@ struct AppointmentsView: View {
             .padding()
         }
         .background(Color(.systemGroupedBackground))
-        .sheet(isPresented: $showingSheet) {
+        .sheet(isPresented: $showingDaySheet) {
             AppointmentDaySheet(
                 date: selectedDate ?? Date(),
                 appointments: selectedAppointments
             )
             .presentationDetents([.medium, .large])
+        }
+        .sheet(isPresented: $showingNewAppointmentSheet) {
+            NewAppointmentSheet(dataStore: dataStore, authVM: authVM)
         }
     }
 
@@ -290,6 +297,95 @@ struct AppointmentDaySheet: View {
     }
 }
 
+// MARK: - New Appointment Sheet
+
+struct NewAppointmentSheet: View {
+    var dataStore: DataStore
+    var authVM: AuthViewModel
+    @Environment(\.dismiss) private var dismiss
+    @State private var selectedPatientId: String?
+    @State private var date = Date()
+    @State private var type = ""
+    @State private var isSaving = false
+    @State private var errorMessage: String?
+
+    private var isValid: Bool {
+        selectedPatientId != nil &&
+        !type.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Patient") {
+                    Picker("Select Patient", selection: $selectedPatientId) {
+                        Text("Choose a patient...").tag(nil as String?)
+                        ForEach(dataStore.patients) { patient in
+                            Text(patient.name).tag(patient.id?.uuidString as String?)
+                        }
+                    }
+                }
+
+                Section("Appointment Details") {
+                    DatePicker("Date & Time", selection: $date)
+                    TextField("Type (e.g. Checkup, Follow-up)", text: $type)
+                }
+
+                if let errorMessage {
+                    Section {
+                        Text(errorMessage)
+                            .foregroundStyle(.red)
+                            .font(.subheadline)
+                    }
+                }
+            }
+            .navigationTitle("Schedule Appointment")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        Task { await saveAppointment() }
+                    }
+                    .disabled(!isValid || isSaving)
+                }
+            }
+            .overlay {
+                if isSaving {
+                    ProgressView()
+                        .controlSize(.large)
+                }
+            }
+            .interactiveDismissDisabled(isSaving)
+        }
+    }
+
+    private func saveAppointment() async {
+        guard let patientId = selectedPatientId else { return }
+        isSaving = true
+        errorMessage = nil
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        let dateString = formatter.string(from: date)
+
+        let success = await dataStore.createAppointment(
+            patientId: patientId,
+            date: dateString,
+            type: type.trimmingCharacters(in: .whitespaces),
+            token: authVM.token
+        )
+        isSaving = false
+        if success {
+            dismiss()
+        } else {
+            errorMessage = "Failed to schedule appointment. Please try again."
+        }
+    }
+}
+
 #Preview {
-    AppointmentsView()
+    AppointmentsView(dataStore: DataStore(), authVM: AuthViewModel())
 }

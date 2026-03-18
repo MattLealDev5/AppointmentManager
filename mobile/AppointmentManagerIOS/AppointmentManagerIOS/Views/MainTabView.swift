@@ -6,8 +6,12 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct MainTabView: View {
+    var authVM: AuthViewModel
+    var dataStore: DataStore
+    @Environment(\.modelContext) private var modelContext
     @State private var selectedTab = 0
     var user: UserProfile = SampleData.currentUser
 
@@ -27,31 +31,44 @@ struct MainTabView: View {
                 Spacer()
 
                 HStack(spacing: 16) {
-                    Button(action: {}) {
-                        Image(systemName: "bell")
-                            .font(.body)
-                            .foregroundStyle(.primary)
+                    // MARK: - Logout Button
+                    Button(action: {
+                        authVM.logout(modelContext: modelContext)
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "rectangle.portrait.and.arrow.right")
+                                .font(.caption)
+                            Text("Log Out")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                        }
+                        .foregroundStyle(.red)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color.red.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
                     }
 
-                    HStack(spacing: 8) {
-                        VStack(alignment: .trailing, spacing: 0) {
-                            Text(user.name)
-                                .font(.caption)
-                                .fontWeight(.medium)
-                            Text(user.role)
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                        }
-                        Circle()
-                            .fill(Color(.tertiarySystemFill))
-                            .frame(width: 32, height: 32)
-                            .overlay {
-                                Text(initials(from: user.name))
-                                    .font(.caption2)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.secondary)
-                            }
-                    }
+                    // MARK: - User Profile (commented out for future use)
+                    // HStack(spacing: 8) {
+                    //     VStack(alignment: .trailing, spacing: 0) {
+                    //         Text(user.name)
+                    //             .font(.caption)
+                    //             .fontWeight(.medium)
+                    //         Text(user.role)
+                    //             .font(.caption2)
+                    //             .foregroundStyle(.secondary)
+                    //     }
+                    //     Circle()
+                    //         .fill(Color(.tertiarySystemFill))
+                    //         .frame(width: 32, height: 32)
+                    //         .overlay {
+                    //             Text(initials(from: user.name))
+                    //                 .font(.caption2)
+                    //                 .fontWeight(.semibold)
+                    //                 .foregroundStyle(.secondary)
+                    //         }
+                    // }
                 }
             }
             .padding(.horizontal)
@@ -61,19 +78,19 @@ struct MainTabView: View {
             // MARK: - Tab Content
             TabView(selection: $selectedTab) {
                 Tab("Dashboard", systemImage: "house", value: 0) {
-                    DashboardView()
+                    DashboardView(dataStore: dataStore, selectedTab: $selectedTab)
                 }
 
                 Tab("Patients", systemImage: "person.2", value: 1) {
-                    PatientsView()
+                    PatientsView(dataStore: dataStore, authVM: authVM)
                 }
 
                 Tab("Appointments", systemImage: "calendar", value: 2) {
-                    AppointmentsView()
+                    AppointmentsView(dataStore: dataStore, authVM: authVM)
                 }
 
                 Tab("Tasks", systemImage: "checklist", value: 3) {
-                    TasksView()
+                    TasksView(dataStore: dataStore, authVM: authVM)
                 }
             }
         }
@@ -87,5 +104,6 @@ struct MainTabView: View {
 }
 
 #Preview {
-    MainTabView()
+    MainTabView(authVM: AuthViewModel(), dataStore: DataStore())
+        .modelContainer(for: LoginRequest.self, inMemory: true)
 }

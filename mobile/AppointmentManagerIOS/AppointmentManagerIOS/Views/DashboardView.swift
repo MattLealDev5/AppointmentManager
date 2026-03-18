@@ -8,11 +8,14 @@
 import SwiftUI
 
 struct DashboardView: View {
-    var pendingTasks: Int = SampleData.pendingTaskCount
-    var todayAppointments: Int = SampleData.todayAppointmentCount
-    var activePatients: Int = SampleData.activePatientCount
-    var overdueItems: Int = SampleData.overdueTaskCount
-    var scheduleItems: [ScheduleItem] = SampleData.scheduleItems
+    var dataStore: DataStore = DataStore()
+    @Binding var selectedTab: Int
+
+    private var pendingTasks: Int { dataStore.pendingTaskItems.count }
+    private var todayAppointments: Int { dataStore.todayAppointments.count }
+    private var activePatients: Int { dataStore.activePatientsCount }
+    private var overdueItems: Int { dataStore.overdueTaskItems.count }
+    private var scheduleItems: [ScheduleItem] { dataStore.todayScheduleItems }
 
     var body: some View {
         ScrollView {
@@ -22,28 +25,24 @@ struct DashboardView: View {
                         StatCard(
                             title: "Pending Tasks",
                             value: "\(pendingTasks)",
-                            subtitle: "+3 from yesterday",
                             icon: "doc.text",
                             accentColor: .blue
                         )
                         StatCard(
                             title: "Today's Appointments",
                             value: "\(todayAppointments)",
-                            subtitle: "2 completed",
                             icon: "calendar",
                             accentColor: .green
                         )
                         StatCard(
                             title: "Active Patients",
                             value: "\(activePatients)",
-                            subtitle: "+5 this week",
                             icon: "person.2",
                             accentColor: .purple
                         )
                         StatCard(
                             title: "Overdue Items",
                             value: "\(overdueItems)",
-                            subtitle: "Needs attention",
                             icon: "clock",
                             accentColor: .red
                         )
@@ -58,7 +57,7 @@ struct DashboardView: View {
                                 .font(.title3)
                                 .fontWeight(.semibold)
                             Spacer()
-                            Button("View All") {}
+                            Button("View All") { selectedTab = 2 }
                                 .font(.subheadline)
                         }
 
@@ -87,7 +86,6 @@ struct DashboardView: View {
 struct StatCard: View {
     let title: String
     let value: String
-    let subtitle: String
     let icon: String
     let accentColor: Color
 
@@ -112,10 +110,6 @@ struct StatCard: View {
                 Text(title)
                     .font(.subheadline)
                     .fontWeight(.medium)
-
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
             .padding(.horizontal, 12)
             .padding(.bottom, 12)
@@ -176,5 +170,5 @@ struct ScheduleRow: View {
 }
 
 #Preview {
-    DashboardView()
+    DashboardView(selectedTab: .constant(0))
 }

@@ -8,8 +8,12 @@
 import SwiftUI
 
 struct PatientsView: View {
-    var patients: [Patient] = SampleData.patients
+    var dataStore: DataStore
+    var authVM: AuthViewModel
     @State private var searchText = ""
+    @State private var showingNewPatientSheet = false
+
+    private var patients: [Patient] { dataStore.patients }
 
     private var filteredPatients: [Patient] {
         if searchText.isEmpty {
@@ -29,7 +33,7 @@ struct PatientsView: View {
 
                     Spacer()
 
-                    Button(action: {}) {
+                    Button(action: { showingNewPatientSheet = true }) {
                         Label("New Patient", systemImage: "plus")
                             .font(.subheadline)
                             .fontWeight(.semibold)
@@ -97,6 +101,91 @@ struct PatientsView: View {
             .padding()
         }
         .background(Color(.systemGroupedBackground))
+        .sheet(isPresented: $showingNewPatientSheet) {
+            NewPatientSheet(dataStore: dataStore, authVM: authVM)
+        }
+    }
+}
+
+// MARK: - New Patient Sheet
+
+struct NewPatientSheet: View {
+    var dataStore: DataStore
+    var authVM: AuthViewModel
+    @Environment(\.dismiss) private var dismiss
+    @State private var name = ""
+    @State private var dateOfBirth = Date()
+    @State private var email = ""
+    @State private var isSaving = false
+    @State private var errorMessage: String?
+
+    private var isValid: Bool {
+        !name.trimmingCharacters(in: .whitespaces).isEmpty &&
+        !email.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Patient Information") {
+                    TextField("Full Name", text: $name)
+                        .textContentType(.name)
+                    DatePicker("Date of Birth", selection: $dateOfBirth, displayedComponents: .date)
+                    TextField("Email", text: $email)
+                        .textContentType(.emailAddress)
+                        .keyboardType(.emailAddress)
+                        .textInputAutocapitalization(.never)
+                }
+
+                if let errorMessage {
+                    Section {
+                        Text(errorMessage)
+                            .foregroundStyle(.red)
+                            .font(.subheadline)
+                    }
+                }
+            }
+            .navigationTitle("New Patient")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        Task { await savePatient() }
+                    }
+                    .disabled(!isValid || isSaving)
+                }
+            }
+            .overlay {
+                if isSaving {
+                    ProgressView()
+                        .controlSize(.large)
+                }
+            }
+            .interactiveDismissDisabled(isSaving)
+        }
+    }
+
+    private func savePatient() async {
+        isSaving = true
+        errorMessage = nil
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        let dateString = formatter.string(from: dateOfBirth)
+        let success = await dataStore.createPatient(
+            name: name.trimmingCharacters(in: .whitespaces),
+            dateOfBirth: dateString,
+            email: email.trimmingCharacters(in: .whitespaces),
+            token: authVM.token
+        )
+        isSaving = false
+        if success {
+            dismiss()
+        } else {
+            errorMessage = "Failed to create patient. Please try again."
+        }
     }
 }
 
@@ -146,15 +235,21 @@ struct PatientRow: View {
     }
 
     private func formattedDate(_ dateString: String) -> String {
-        // Converts "1985-03-12" to "Mar 12, 1985"
+        // Handles both "1985-03-12" and "1985-03-12T00:00:00" formats
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        guard let date = formatter.date(from: dateString) else { return dateString }
+        // Try with time component first
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        var date = formatter.date(from: dateString)
+        if date == nil {
+            formatter.dateFormat = "yyyy-MM-dd"
+            date = formatter.date(from: dateString)
+        }
+        guard let date else { return dateString }
         formatter.dateFormat = "MMM dd, yyyy"
         return formatter.string(from: date)
     }
 }
 
 #Preview {
-    PatientsView()
+    PatientsView(dataStore: DataStore(), authVM: AuthViewModel())
 }

@@ -8,69 +8,28 @@
 import SwiftUI
 
 struct TasksView: View {
-    var taskDisplayItems: [TaskDisplayItem] = SampleData.taskDisplayItems
-    @State private var selectedPriority: String? = nil
+    var dataStore: DataStore = DataStore()
+    var authVM: AuthViewModel = AuthViewModel()
+    @State private var taskToComplete: TaskItem? = nil
+    @State private var showingConfirmation = false
 
-    private var pendingTasks: [TaskDisplayItem] {
-        let pending = taskDisplayItems.filter { $0.status != "Completed" }
-        if let priority = selectedPriority {
-            return pending.filter { $0.priority == priority }
-        }
-        return pending
+    private var allTasks: [TaskItem] { dataStore.taskItems }
+
+    private var pendingTasks: [TaskItem] {
+        allTasks.filter { $0.status != "Completed" }
     }
 
-    private var completedTasks: [TaskDisplayItem] {
-        let completed = taskDisplayItems.filter { $0.status == "Completed" }
-        if let priority = selectedPriority {
-            return completed.filter { $0.priority == priority }
-        }
-        return completed
-    }
-
-    private func countByPriority(_ priority: String) -> Int {
-        taskDisplayItems.filter { $0.priority == priority }.count
+    private var completedTasks: [TaskItem] {
+        allTasks.filter { $0.status == "Completed" }
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 // MARK: - Header
-                HStack {
-                    Text("Clinical Tasks")
-                        .font(.title2)
-                        .fontWeight(.bold)
-
-                    Spacer()
-
-                    HStack(spacing: 8) {
-                        PriorityFilterButton(
-                            label: "High Priority",
-                            count: countByPriority("High"),
-                            color: .red,
-                            isSelected: selectedPriority == "High"
-                        ) {
-                            selectedPriority = selectedPriority == "High" ? nil : "High"
-                        }
-
-                        PriorityFilterButton(
-                            label: "Medium",
-                            count: countByPriority("Medium"),
-                            color: .yellow,
-                            isSelected: selectedPriority == "Medium"
-                        ) {
-                            selectedPriority = selectedPriority == "Medium" ? nil : "Medium"
-                        }
-
-                        PriorityFilterButton(
-                            label: "Low",
-                            count: countByPriority("Low"),
-                            color: .blue,
-                            isSelected: selectedPriority == "Low"
-                        ) {
-                            selectedPriority = selectedPriority == "Low" ? nil : "Low"
-                        }
-                    }
-                }
+                Text("Clinical Tasks")
+                    .font(.title2)
+                    .fontWeight(.bold)
 
                 // MARK: - Pending Tasks
                 VStack(alignment: .leading, spacing: 12) {
@@ -93,7 +52,13 @@ struct TasksView: View {
                     } else {
                         VStack(spacing: 0) {
                             ForEach(pendingTasks) { task in
-                                PendingTaskRow(task: task)
+                                PendingTaskRow(
+                                    task: task,
+                                    patientName: dataStore.patientName(for: task.appointment_id.uuidString)
+                                ) {
+                                    taskToComplete = task
+                                    showingConfirmation = true
+                                }
                                 if task.id != pendingTasks.last?.id {
                                     Divider()
                                         .padding(.leading, 16)
@@ -127,7 +92,10 @@ struct TasksView: View {
                     } else {
                         VStack(spacing: 0) {
                             ForEach(completedTasks) { task in
-                                CompletedTaskRow(task: task)
+                                CompletedTaskRow(
+                                    task: task,
+                                    patientName: dataStore.patientName(for: task.appointment_id.uuidString)
+                                )
                                 if task.id != completedTasks.last?.id {
                                     Divider()
                                         .padding(.leading, 16)
@@ -147,28 +115,16 @@ struct TasksView: View {
             .padding()
         }
         .background(Color(.systemGroupedBackground))
-    }
-}
-
-// MARK: - Priority Filter Button
-
-struct PriorityFilterButton: View {
-    let label: String
-    let count: Int
-    let color: Color
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text("\(label) (\(count))")
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundStyle(isSelected ? .white : color)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(isSelected ? color : color.opacity(0.12))
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+        .alert("Complete Task", isPresented: $showingConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Complete", role: .destructive) {
+                guard let task = taskToComplete, let id = task.id else { return }
+                Task {
+                    _ = await dataStore.completeTask(id: id, task: task, token: authVM.token)
+                }
+            }
+        } message: {
+            Text("Are you sure you want to mark this task as completed?")
         }
     }
 }
@@ -176,25 +132,21 @@ struct PriorityFilterButton: View {
 // MARK: - Pending Task Row
 
 struct PendingTaskRow: View {
-    let task: TaskDisplayItem
+    let task: TaskItem
+    var patientName: String = "Unknown Patient"
+    var onComplete: () -> Void = {}
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
             // Left side: task info
             VStack(alignment: .leading, spacing: 4) {
-                Text(task.title)
+                Text(task.status)
                     .font(.subheadline)
                     .fontWeight(.semibold)
 
-                Text(task.patientName)
+                Text(patientName)
                     .font(.caption)
                     .foregroundStyle(.secondary)
-
-                if let dueDate = task.dueDate {
-                    Text("Due: \(dueDate)")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
             }
 
             Spacer()
@@ -210,7 +162,7 @@ struct PendingTaskRow: View {
                     .background(priorityColor(task.priority).opacity(0.12))
                     .clipShape(RoundedRectangle(cornerRadius: 6))
 
-                Button(action: {}) {
+                Button(action: onComplete) {
                     Text("Complete")
                         .font(.caption)
                         .fontWeight(.semibold)
@@ -239,7 +191,8 @@ struct PendingTaskRow: View {
 // MARK: - Completed Task Row
 
 struct CompletedTaskRow: View {
-    let task: TaskDisplayItem
+    let task: TaskItem
+    var patientName: String = "Unknown Patient"
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
@@ -248,20 +201,14 @@ struct CompletedTaskRow: View {
                 .font(.body)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(task.title)
+                Text(task.status)
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .strikethrough(true, color: .secondary)
 
-                Text(task.patientName)
+                Text(patientName)
                     .font(.caption)
                     .foregroundStyle(.secondary)
-
-                if let completedDate = task.completedDate {
-                    Text("Completed on \(completedDate)")
-                        .font(.caption2)
-                        .foregroundStyle(.green)
-                }
             }
 
             Spacer()
@@ -272,5 +219,5 @@ struct CompletedTaskRow: View {
 }
 
 #Preview {
-    TasksView()
+    TasksView(dataStore: DataStore(), authVM: AuthViewModel())
 }
